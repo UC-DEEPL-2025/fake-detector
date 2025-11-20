@@ -1,0 +1,14 @@
+root_dir: Dataset
+img_size: 256
+normalize: false # todo
+batch_size: 32
+num_workers: 4
+train_split: "Train"
+val_split: "Validation"
+test_split: "Test"
+classes: ["Real", "Fake"]  # Order matters: Real=0, Fake=1
+aug:
+  hflip_p: 0.5
+  brightness_contrast_p: 0.2
+allowed_extensions: ["jpg", "jpeg", "png", "bmp", "tif", "tiff"]
+subset_fraction: 1.0  # Use fraction of data (0-1), set <1 for quick testing

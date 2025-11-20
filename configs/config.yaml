@@ -1,0 +1,9 @@
+defaults:
+  - data: default
+  - train: default
+  - model: unet
+
+experiment_name: "baseline"
+output_dir: "runs"
+verbose: true
+checkpoint_path: null

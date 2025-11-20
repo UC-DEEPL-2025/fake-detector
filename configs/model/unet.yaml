@@ -1,0 +1,17 @@
+name: unet
+type: unet
+params:
+  depth: 3
+  base_channels: 64
+  out_channels: 1
+  # architecture parameters (no magic numbers)
+  conv_kernel: 3
+  conv_padding: 1
+  norm: bn # options: bn, none
+  activation: relu # options: relu, leaky_relu
+  activation_negative_slope: 0.01
+  up_kernel: 2
+  up_stride: 2
+  pool_kernel: 2
+  pool_stride: 2
+  classifier: gap # options: gap
