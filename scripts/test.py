@@ -1,4 +1,11 @@
 import os
+import sys
+import code
+
+# Add repo root to sys.path so 'code' package is visible
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 import torch
 from torchvision import transforms
 import torch.distributed as dist
@@ -8,9 +15,9 @@ if 'MASTER_ADDR' not in os.environ:
 if 'MASTER_PORT' not in os.environ:
     os.environ['MASTER_PORT'] = '29500'
 
-import preprocess
-import engine
-import model_builder
+from dfdetect.preprocessing import preprocess
+from dfdetect.engine import engine
+from dfdetect.model import model_builder
 import torch.multiprocessing as mp
 
 # ----- Config (match train.py) -----

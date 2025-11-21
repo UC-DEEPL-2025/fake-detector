@@ -10,7 +10,10 @@ import time
 from torchvision import transforms
 import torch.distributed as dist
 import torch.multiprocessing as mp
-import preprocess, engine, model_builder, utils
+from dfdetect.preprocessing import preprocess
+from dfdetect.engine import engine
+from dfdetect.model import model_builder
+from dfdetect.utils import utils
 
 # Global constants
 NUM_EPOCHS = 10
