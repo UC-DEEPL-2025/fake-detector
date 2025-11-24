@@ -43,10 +43,22 @@ def train_loop(cfg: Dict[str, Any], loaders: Dict[str, DataLoader]) -> Dict[str,
     if verbose:
         print(f"[INFO] Using device: {device}")
     
-    out_root = os.path.abspath(cfg.get("output_dir", "runs"))
-    exp_name = cfg.get("experiment_name", "exp") + "_" + timestamp()
-    run_dir = os.path.join(out_root, exp_name)
-    ensure_dir(run_dir)
+    # Check if resuming from checkpoint
+    resume_path = cfg.get("checkpoint_path")
+    start_epoch = 1
+    best_val = math.inf
+    
+    if resume_path and os.path.exists(resume_path):
+        if verbose:
+            print(f"[INFO] Resuming from checkpoint: {resume_path}")
+        # Extract run_dir from checkpoint path
+        run_dir = os.path.dirname(resume_path)
+    else:
+        out_root = os.path.abspath(cfg.get("output_dir", "runs"))
+        exp_name = cfg.get("experiment_name", "exp") + "_" + timestamp()
+        run_dir = os.path.join(out_root, exp_name)
+        ensure_dir(run_dir)
+    
     if verbose:
         print(f"[INFO] Run directory: {run_dir}")
 
@@ -67,14 +79,27 @@ def train_loop(cfg: Dict[str, Any], loaders: Dict[str, DataLoader]) -> Dict[str,
     use_amp = bool(cfg.train["mixed_precision"]) and device.type == "cuda"
     scaler = GradScaler(enabled=use_amp)
 
+    # Load checkpoint if resuming
+    if resume_path and os.path.exists(resume_path):
+        checkpoint = torch.load(resume_path, map_location=device)
+        model.load_state_dict(checkpoint["model"])
+        if "optimizer" in checkpoint:
+            optimizer.load_state_dict(checkpoint["optimizer"])
+        if "scaler" in checkpoint and use_amp:
+            scaler.load_state_dict(checkpoint["scaler"])
+        start_epoch = checkpoint.get("epoch", 0) + 1
+        best_val = checkpoint.get("best_val_loss", checkpoint.get("val_loss", math.inf))
+        if verbose:
+            print(f"[INFO] Resumed from epoch {start_epoch-1}, best_val_loss={best_val:.4f}")
+
     epochs = int(cfg.train["epochs"])
-    best_val = math.inf
     best_path = os.path.join(run_dir, "best_unet.pt")
+    last_path = os.path.join(run_dir, "last_unet.pt")
 
     train_loader = loaders["train"]
     val_loader = loaders["val"]
 
-    for epoch in range(1, epochs + 1):
+    for epoch in range(start_epoch, epochs + 1):
         if verbose:
             print(f"\n[EPOCH {epoch}/{epochs}] Starting training...")
         model.train()
@@ -119,12 +144,26 @@ def train_loop(cfg: Dict[str, Any], loaders: Dict[str, DataLoader]) -> Dict[str,
             best_val = val_loss
             torch.save({
                 "model": model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "scaler": scaler.state_dict() if use_amp else None,
                 "epoch": epoch,
                 "val_loss": val_loss,
+                "best_val_loss": best_val,
                 "config": dict(cfg),
             }, best_path)
             if verbose:
                 print(f"[EPOCH {epoch}/{epochs}] New best model saved (val_loss={val_loss:.4f})")
+
+        # Always save the latest checkpoint for resuming
+        torch.save({
+            "model": model.state_dict(),
+            "optimizer": optimizer.state_dict(),
+            "scaler": scaler.state_dict() if use_amp else None,
+            "epoch": epoch,
+            "val_loss": val_loss,
+            "best_val_loss": best_val,
+            "config": dict(cfg),
+        }, last_path)
 
         print(f"Epoch {epoch:03d} | train_loss={tr_loss:.4f} val_loss={val_loss:.4f}")
 
@@ -151,8 +190,13 @@ def train_loop(cfg: Dict[str, Any], loaders: Dict[str, DataLoader]) -> Dict[str,
     best_summary = {
         "best_val_loss": best_val,
         "best_checkpoint": best_path,
+        "last_checkpoint": last_path,
         "run_dir": run_dir,
         "model": "unet",
     }
     write_json(best_summary, os.path.join(run_dir, "metrics_unet_best.json"))
+    if verbose:
+        print(f"\n[INFO] Training complete!")
+        print(f"[INFO] Best checkpoint: {best_path}")
+        print(f"[INFO] Last checkpoint (for resume): {last_path}")
     return best_summary

@@ -22,5 +22,8 @@ def build_transforms(
             transforms.append(A.RandomBrightnessContrast(p=brightness_contrast_p))
     if normalize:
         transforms.append(A.Normalize(mean=tuple(norm_mean), std=tuple(norm_std)))
+    else:
+        # If not using custom normalization, still need to convert to [0, 1] range
+        transforms.append(A.ToFloat(max_value=255.0))
     transforms.append(ToTensorV2())
     return A.Compose(transforms)
