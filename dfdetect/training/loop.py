@@ -79,6 +79,13 @@ def train_loop(cfg: Dict[str, Any], loaders: Dict[str, DataLoader]) -> Dict[str,
     use_amp = bool(cfg.train["mixed_precision"]) and device.type == "cuda"
     scaler = GradScaler(enabled=use_amp)
 
+    early_cfg = cfg.train.get("early_stopping", {}) or {}
+    use_early = bool(early_cfg.get("enabled", False))
+    patience = int(early_cfg.get("patience", 5))
+    min_delta = float(early_cfg.get("min_delta", 0.0))
+    no_improve_epochs = 0
+    stopped_early = False
+
     # Load checkpoint if resuming
     if resume_path and os.path.exists(resume_path):
         checkpoint = torch.load(resume_path, map_location=device)
@@ -89,6 +96,7 @@ def train_loop(cfg: Dict[str, Any], loaders: Dict[str, DataLoader]) -> Dict[str,
             scaler.load_state_dict(checkpoint["scaler"])
         start_epoch = checkpoint.get("epoch", 0) + 1
         best_val = checkpoint.get("best_val_loss", checkpoint.get("val_loss", math.inf))
+        no_improve_epochs = checkpoint.get("no_improve_epochs", 0)
         if verbose:
             print(f"[INFO] Resumed from epoch {start_epoch-1}, best_val_loss={best_val:.4f}")
 
@@ -98,6 +106,8 @@ def train_loop(cfg: Dict[str, Any], loaders: Dict[str, DataLoader]) -> Dict[str,
 
     train_loader = loaders["train"]
     val_loader = loaders["val"]
+
+    final_epoch = start_epoch - 1
 
     for epoch in range(start_epoch, epochs + 1):
         if verbose:
@@ -139,33 +149,47 @@ def train_loop(cfg: Dict[str, Any], loaders: Dict[str, DataLoader]) -> Dict[str,
             print(f"[EPOCH {epoch}/{epochs}] Validation complete: loss={val_loss:.4f}")
 
         # save the best
-        improved = val_loss < best_val
+        improved = val_loss < (best_val - min_delta)
         if improved:
             best_val = val_loss
-            torch.save({
+            no_improve_epochs = 0
+            best_payload = {
                 "model": model.state_dict(),
                 "optimizer": optimizer.state_dict(),
                 "scaler": scaler.state_dict() if use_amp else None,
                 "epoch": epoch,
                 "val_loss": val_loss,
                 "best_val_loss": best_val,
+                "no_improve_epochs": no_improve_epochs,
                 "config": dict(cfg),
-            }, best_path)
+            }
+            torch.save(best_payload, best_path)
             if verbose:
                 print(f"[EPOCH {epoch}/{epochs}] New best model saved (val_loss={val_loss:.4f})")
+        else:
+            no_improve_epochs += 1
 
         # Always save the latest checkpoint for resuming
-        torch.save({
+        checkpoint_payload = {
             "model": model.state_dict(),
             "optimizer": optimizer.state_dict(),
             "scaler": scaler.state_dict() if use_amp else None,
             "epoch": epoch,
             "val_loss": val_loss,
             "best_val_loss": best_val,
+            "no_improve_epochs": no_improve_epochs,
             "config": dict(cfg),
-        }, last_path)
+        }
+        torch.save(checkpoint_payload, last_path)
 
         print(f"Epoch {epoch:03d} | train_loss={tr_loss:.4f} val_loss={val_loss:.4f}")
+        final_epoch = epoch
+
+        if use_early and no_improve_epochs >= patience:
+            stopped_early = True
+            if verbose:
+                print(f"[EPOCH {epoch}/{epochs}] Early stopping triggered (patience={patience}, min_delta={min_delta})")
+            break
 
     # after training / write best summary and a validation preds.csv for external metrics
     val_out = _val_epoch(model, val_loader, device, criterion)
@@ -193,10 +217,15 @@ def train_loop(cfg: Dict[str, Any], loaders: Dict[str, DataLoader]) -> Dict[str,
         "last_checkpoint": last_path,
         "run_dir": run_dir,
         "model": "unet",
+        "epochs_completed": final_epoch,
+        "stopped_early": stopped_early,
     }
     write_json(best_summary, os.path.join(run_dir, "metrics_unet_best.json"))
     if verbose:
         print(f"\n[INFO] Training complete!")
         print(f"[INFO] Best checkpoint: {best_path}")
         print(f"[INFO] Last checkpoint (for resume): {last_path}")
+        if use_early:
+            status = "triggered" if stopped_early else "not_triggered"
+            print(f"[INFO] Early stopping status: {status} (patience={patience}, min_delta={min_delta})")
     return best_summary

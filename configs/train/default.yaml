@@ -4,3 +4,7 @@ lr: 1e-3
 weight_decay: 1e-4
 seed: 42
 mixed_precision: true
+early_stopping:
+	enabled: false
+	patience: 5
+	min_delta: 0.0
