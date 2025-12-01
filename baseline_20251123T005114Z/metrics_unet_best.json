@@ -1,7 +1,0 @@
-{
-  "best_val_loss": 0.33512310991894223,
-  "best_checkpoint": "runs/baseline_20251123T005114Z\\best_unet.pt",
-  "last_checkpoint": "runs/baseline_20251123T005114Z\\last_unet.pt",
-  "run_dir": "runs/baseline_20251123T005114Z",
-  "model": "unet"
-}

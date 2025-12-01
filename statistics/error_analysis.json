@@ -1,0 +1,136 @@
+{
+  "top_false_positives": [
+    {
+      "path": "Dataset\\Test\\Real\\real_2448.jpg",
+      "true_label": "Real",
+      "predicted_prob_fake": 1.0,
+      "rank": 1
+    },
+    {
+      "path": "Dataset\\Test\\Real\\real_4266.jpg",
+      "true_label": "Real",
+      "predicted_prob_fake": 1.0,
+      "rank": 2
+    },
+    {
+      "path": "Dataset\\Test\\Real\\real_2429.jpg",
+      "true_label": "Real",
+      "predicted_prob_fake": 0.9999998807907104,
+      "rank": 3
+    },
+    {
+      "path": "Dataset\\Test\\Real\\real_2746.jpg",
+      "true_label": "Real",
+      "predicted_prob_fake": 0.9999995231628418,
+      "rank": 4
+    },
+    {
+      "path": "Dataset\\Test\\Real\\real_4417.jpg",
+      "true_label": "Real",
+      "predicted_prob_fake": 0.9999988079071045,
+      "rank": 5
+    },
+    {
+      "path": "Dataset\\Test\\Real\\real_2447.jpg",
+      "true_label": "Real",
+      "predicted_prob_fake": 0.9999986886978149,
+      "rank": 6
+    },
+    {
+      "path": "Dataset\\Test\\Real\\real_1774.jpg",
+      "true_label": "Real",
+      "predicted_prob_fake": 0.9999966621398926,
+      "rank": 7
+    },
+    {
+      "path": "Dataset\\Test\\Real\\real_4415.jpg",
+      "true_label": "Real",
+      "predicted_prob_fake": 0.9999959468841553,
+      "rank": 8
+    },
+    {
+      "path": "Dataset\\Test\\Real\\real_2743.jpg",
+      "true_label": "Real",
+      "predicted_prob_fake": 0.9999958276748657,
+      "rank": 9
+    },
+    {
+      "path": "Dataset\\Test\\Real\\real_3181.jpg",
+      "true_label": "Real",
+      "predicted_prob_fake": 0.9999946355819702,
+      "rank": 10
+    }
+  ],
+  "top_false_negatives": [
+    {
+      "path": "Dataset\\Test\\Fake\\fake_2371.jpg",
+      "true_label": "Fake",
+      "predicted_prob_fake": 0.000507187214680016,
+      "predicted_prob_real": 0.99949281278532,
+      "rank": 1
+    },
+    {
+      "path": "Dataset\\Test\\Fake\\fake_2658.jpg",
+      "true_label": "Fake",
+      "predicted_prob_fake": 0.005071026738733053,
+      "predicted_prob_real": 0.994928973261267,
+      "rank": 2
+    },
+    {
+      "path": "Dataset\\Test\\Fake\\fake_2126.jpg",
+      "true_label": "Fake",
+      "predicted_prob_fake": 0.0063258069567382336,
+      "predicted_prob_real": 0.9936741930432618,
+      "rank": 3
+    },
+    {
+      "path": "Dataset\\Test\\Fake\\fake_4031.jpg",
+      "true_label": "Fake",
+      "predicted_prob_fake": 0.007579009048640728,
+      "predicted_prob_real": 0.9924209909513593,
+      "rank": 4
+    },
+    {
+      "path": "Dataset\\Test\\Fake\\fake_4018.jpg",
+      "true_label": "Fake",
+      "predicted_prob_fake": 0.012610780075192451,
+      "predicted_prob_real": 0.9873892199248075,
+      "rank": 5
+    },
+    {
+      "path": "Dataset\\Test\\Fake\\fake_1728.jpg",
+      "true_label": "Fake",
+      "predicted_prob_fake": 0.014051221311092377,
+      "predicted_prob_real": 0.9859487786889076,
+      "rank": 6
+    },
+    {
+      "path": "Dataset\\Test\\Fake\\fake_633.jpg",
+      "true_label": "Fake",
+      "predicted_prob_fake": 0.01443205401301384,
+      "predicted_prob_real": 0.9855679459869862,
+      "rank": 7
+    },
+    {
+      "path": "Dataset\\Test\\Fake\\fake_62.jpg",
+      "true_label": "Fake",
+      "predicted_prob_fake": 0.014955021440982819,
+      "predicted_prob_real": 0.9850449785590172,
+      "rank": 8
+    },
+    {
+      "path": "Dataset\\Test\\Fake\\fake_4215.jpg",
+      "true_label": "Fake",
+      "predicted_prob_fake": 0.015444261021912098,
+      "predicted_prob_real": 0.9845557389780879,
+      "rank": 9
+    },
+    {
+      "path": "Dataset\\Test\\Fake\\fake_3820.jpg",
+      "true_label": "Fake",
+      "predicted_prob_fake": 0.017178568989038467,
+      "predicted_prob_real": 0.9828214310109615,
+      "rank": 10
+    }
+  ]
+}
