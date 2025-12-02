@@ -392,6 +392,31 @@ fn_confidences = [(i, 1 - y_prob[i]) for i in fn_indices]  # Confidence in wrong
 fp_sorted = sorted(fp_confidences, key=lambda x: x[1], reverse=True)[:10]
 fn_sorted = sorted(fn_confidences, key=lambda x: x[1], reverse=True)[:10]
 
+# Also get one representative true positive
+tp_example = None
+if len(tp_indices) > 0:
+    # Get a high-confidence true positive
+    tp_confidences = [(i, y_prob[i]) for i in tp_indices]
+    tp_sorted = sorted(tp_confidences, key=lambda x: x[1], reverse=True)
+    tp_example_idx = tp_sorted[0][0]  # Most confident TP
+    tp_example = {
+        "path": results[tp_example_idx]['path'],
+        "true_label": "Fake",
+        "predicted_label": "Fake",
+        "predicted_prob_fake": float(y_prob[tp_example_idx]),
+        "confidence": float(y_prob[tp_example_idx])
+    }
+    # Save the TP example image with annotation
+    tp_img = Image.open(results[tp_example_idx]['path']).convert('RGB')
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.imshow(tp_img)
+    ax.axis('off')
+    ax.set_title(f"True Positive Example\nTrue: Fake | Predicted: Fake\nConfidence: {y_prob[tp_example_idx]:.3f}", 
+                 fontsize=14, color='green', fontweight='bold', pad=20)
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_dir, '9_true_positive_example.png'), bbox_inches='tight')
+    plt.close()
+
 error_analysis = {
     "top_false_positives": [
         {
@@ -411,7 +436,8 @@ error_analysis = {
             "rank": rank + 1
         }
         for rank, (idx, conf) in enumerate(fn_sorted)
-    ]
+    ],
+    "true_positive_example": tp_example
 }
 
 with open("statistics/error_analysis.json", "w") as f:
@@ -430,6 +456,13 @@ print("  5. Metrics Bar Chart")
 print("  6. Threshold Analysis")
 print("  7. Per-Class Metrics")
 print("  8. Sample Predictions Grid")
+print("  9. True Positive Example")
 print("\nAdditional files:")
-print("  - statistics/error_analysis.json (top confident mistakes)")
+print("  - statistics/error_analysis.json (top confident mistakes + TP example)")
+print(f"\n{' METRICS SUMMARY ':-^60}")
+print(f"Accuracy:  {accuracy:.4f}")
+print(f"Precision: {precision:.4f}")
+print(f"Recall:    {recall:.4f}")
+print(f"F1 Score:  {f1:.4f}")
+print(f"ROC-AUC:   {auc_score:.4f}")
 print("="*60)

@@ -132,5 +132,12 @@
       "predicted_prob_real": 0.9828214310109615,
       "rank": 10
     }
-  ]
+  ],
+  "true_positive_example": {
+    "path": "Dataset\\Test\\Fake\\fake_1360.jpg",
+    "true_label": "Fake",
+    "predicted_label": "Fake",
+    "predicted_prob_fake": 1.0,
+    "confidence": 1.0
+  }
 }
