@@ -22,7 +22,6 @@ plt.rcParams['axes.labelsize'] = 12
 plt.rcParams['axes.titlesize'] = 14
 plt.rcParams['legend.fontsize'] = 10
 
-# Load config
 with open("configs/model/unet.yaml", "r") as f:
 	model_cfg = yaml.safe_load(f)
 with open("configs/data/default.yaml", "r") as f:
@@ -110,18 +109,14 @@ auc_score = roc_auc_score(y_true, y_prob)
 cm = confusion_matrix(y_true, y_pred)
 tn, fp, fn, tp = cm.ravel()
 
-print("\n" + "="*60)
-print("CLASSIFICATION METRICS")
-print("="*60)
-print(f"Accuracy:  {accuracy:.4f}")
-print(f"Precision: {precision:.4f}")
-print(f"Recall:    {recall:.4f}")
-print(f"F1 Score:  {f1:.4f}")
-print(f"ROC-AUC:   {auc_score:.4f}")
-print(f"\nConfusion Matrix:")
-print(f"TN: {tn:6d}  FP: {fp:6d}")
-print(f"FN: {fn:6d}  TP: {tp:6d}")
-print("="*60)
+print(f"accuracy:  {accuracy:.4f}")
+print(f"precision: {precision:.4f}")
+print(f"recall:    {recall:.4f}")
+print(f"f1 score:  {f1:.4f}")
+print(f"roc-auc:   {auc_score:.4f}")
+print(f"\nconfusion matrix:")
+print(f"tn: {tn:6d}  fp: {fp:6d}")
+print(f"fn: {fn:6d}  tp: {tp:6d}")
 
 os.makedirs("statistics", exist_ok=True)
 
@@ -151,22 +146,16 @@ summary = {
 with open("statistics/summary.json", "w") as f:
 	json.dump(summary, f, indent=2)
 
-print(f"\nResults saved to:")
+print(f"\nresults saved to:")
 print(f"  - statistics/summary.json")
 print(f"  - statistics/predictions.json")
 
-# ===================================================================
-# GENERATE VISUALIZATIONS FOR POSTER
-# ===================================================================
-print("\n" + "="*60)
-print("GENERATING VISUALIZATIONS")
-print("="*60)
+# for poster
 
 fig_dir = "statistics/figures"
 os.makedirs(fig_dir, exist_ok=True)
 
-# CONFUSION MATRIX HEATMAP
-print("Creating confusion matrix heatmap...")
+print("confusion matrix heatmap...")
 fig, ax = plt.subplots(figsize=(8, 6))
 cm_display = np.array([[tn, fp], [fn, tp]])
 sns.heatmap(cm_display, annot=True, fmt='d', cmap='Blues', 
@@ -180,8 +169,7 @@ plt.tight_layout()
 plt.savefig(os.path.join(fig_dir, '1_confusion_matrix.png'), bbox_inches='tight')
 plt.close()
 
-# ROC CURVE
-print("Creating ROC curve...")
+# roc curve
 fpr, tpr, thresholds_roc = roc_curve(y_true, y_prob)
 roc_auc_value = auc(fpr, tpr)
 fig, ax = plt.subplots(figsize=(8, 6))
@@ -198,8 +186,7 @@ plt.tight_layout()
 plt.savefig(os.path.join(fig_dir, '2_roc_curve.png'), bbox_inches='tight')
 plt.close()
 
-# PRECISION-RECALL CURVE
-print("Creating precision-recall curve...")
+# precision-recall curve
 precisions, recalls, thresholds_pr = precision_recall_curve(y_true, y_prob)
 pr_auc = auc(recalls, precisions)
 fig, ax = plt.subplots(figsize=(8, 6))
@@ -215,8 +202,7 @@ plt.tight_layout()
 plt.savefig(os.path.join(fig_dir, '3_precision_recall_curve.png'), bbox_inches='tight')
 plt.close()
 
-# PREDICTION DISTRIBUTION HISTOGRAM
-print("Creating prediction distribution histogram...")
+# prediction distribution histogram
 fig, ax = plt.subplots(figsize=(10, 6))
 real_probs = y_prob[y_true == 0]
 fake_probs = y_prob[y_true == 1]
@@ -232,7 +218,7 @@ plt.tight_layout()
 plt.savefig(os.path.join(fig_dir, '4_prediction_distribution.png'), bbox_inches='tight')
 plt.close()
 
-# METRICS BAR CHART
+# metrics bar chart
 print("Creating metrics bar chart...")
 metrics_names = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC-AUC']
 metrics_values = [accuracy, precision, recall, f1, auc_score]
@@ -252,7 +238,7 @@ plt.tight_layout()
 plt.savefig(os.path.join(fig_dir, '5_metrics_bar_chart.png'), bbox_inches='tight')
 plt.close()
 
-# THRESHOLD ANALYSIS
+# threshold analysis
 print("Creating threshold analysis...")
 thresholds_analysis = np.linspace(0, 1, 100)
 accuracies = []
@@ -287,9 +273,6 @@ plt.tight_layout()
 plt.savefig(os.path.join(fig_dir, '6_threshold_analysis.png'), bbox_inches='tight')
 plt.close()
 
-# PER-CLASS METRICS
-print("Creating per-class metrics...")
-# 0 = Real, 1 = Fake
 real_mask = y_true == 0
 fake_mask = y_true == 1
 
@@ -333,9 +316,6 @@ plt.tight_layout()
 plt.savefig(os.path.join(fig_dir, '7_per_class_metrics.png'), bbox_inches='tight')
 plt.close()
 
-# SAMPLE PREDICTIONS GRID
-print("Creating sample predictions grid...")
-# examples of TP, TN, FP, FN
 tp_indices = np.where((y_true == 1) & (y_pred == 1))[0]
 tn_indices = np.where((y_true == 0) & (y_pred == 0))[0]
 fp_indices = np.where((y_true == 0) & (y_pred == 1))[0]
@@ -383,19 +363,19 @@ if len(examples) > 0:
     plt.savefig(os.path.join(fig_dir, '8_sample_predictions.png'), bbox_inches='tight')
     plt.close()
 
-# ERROR ANALYSIS - Top Confident Mistakes
+# error analysis - top confident mistakes
 print("Creating error analysis...")
-# top 10 most confident false positives and false negatives
+# top 10 most confident false positives and false negatives (i think this is the way to do it)
 fp_confidences = [(i, y_prob[i]) for i in fp_indices]
-fn_confidences = [(i, 1 - y_prob[i]) for i in fn_indices]  # Confidence in wrong class
+fn_confidences = [(i, 1 - y_prob[i]) for i in fn_indices]  # confidence but wrong class
 
 fp_sorted = sorted(fp_confidences, key=lambda x: x[1], reverse=True)[:10]
 fn_sorted = sorted(fn_confidences, key=lambda x: x[1], reverse=True)[:10]
 
-# Also get one representative true positive
+# also get one representative true positive
 tp_example = None
 if len(tp_indices) > 0:
-    # Get a high-confidence true positive
+    # h igh confidence true positive
     tp_confidences = [(i, y_prob[i]) for i in tp_indices]
     tp_sorted = sorted(tp_confidences, key=lambda x: x[1], reverse=True)
     tp_example_idx = tp_sorted[0][0]  # Most confident TP
@@ -406,7 +386,6 @@ if len(tp_indices) > 0:
         "predicted_prob_fake": float(y_prob[tp_example_idx]),
         "confidence": float(y_prob[tp_example_idx])
     }
-    # Save the TP example image with annotation
     tp_img = Image.open(results[tp_example_idx]['path']).convert('RGB')
     fig, ax = plt.subplots(figsize=(8, 8))
     ax.imshow(tp_img)
@@ -443,26 +422,22 @@ error_analysis = {
 with open("statistics/error_analysis.json", "w") as f:
     json.dump(error_analysis, f, indent=2)
 
-print("\n" + "="*60)
-print("VISUALIZATION COMPLETE!")
-print("="*60)
-print(f"\nAll figures saved to: {fig_dir}/")
+print(f"\nfigures saved to: {fig_dir}/")
 print("\nGenerated figures:")
-print("  1. Confusion Matrix Heatmap")
-print("  2. ROC Curve")
-print("  3. Precision-Recall Curve")
-print("  4. Prediction Distribution Histogram")
-print("  5. Metrics Bar Chart")
-print("  6. Threshold Analysis")
-print("  7. Per-Class Metrics")
-print("  8. Sample Predictions Grid")
-print("  9. True Positive Example")
-print("\nAdditional files:")
-print("  - statistics/error_analysis.json (top confident mistakes + TP example)")
-print(f"\n{' METRICS SUMMARY ':-^60}")
+print("1. Confusion Matrix Heatmap")
+print("2. ROC Curve")
+print("3. Precision-Recall Curve")
+print("4. Prediction Distribution Histogram")
+print("5. Metrics Bar Chart")
+print("6. Threshold Analysis")
+print("7. Per-Class Metrics")
+print("8. Sample Predictions Grid")
+print("9. True Positive Example")
+
+print("\n")
+
 print(f"Accuracy:  {accuracy:.4f}")
 print(f"Precision: {precision:.4f}")
 print(f"Recall:    {recall:.4f}")
 print(f"F1 Score:  {f1:.4f}")
 print(f"ROC-AUC:   {auc_score:.4f}")
-print("="*60)

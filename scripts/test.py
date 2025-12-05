@@ -86,12 +86,11 @@ def main(cfg: DictConfig) -> None:
             if verbose and (i + 1) % max(1, len(test_loader) // 5) == 0:
                 print(f"  [Batch {i+1}/{len(test_loader)}]")
     
-    # Compute simple accuracy
+    # simple accuracy
     y_pred = [1 if p >= 0.5 else 0 for p in y_prob]
     correct = sum([1 for yt, yp in zip(y_true, y_pred) if yt == yp])
     accuracy = correct / len(y_true) if len(y_true) > 0 else 0.0
     
-    # Save predictions
     checkpoint_dir = os.path.dirname(checkpoint_path)
     preds_path = os.path.join(checkpoint_dir, "test_preds.csv")
     with open(preds_path, "w", newline="", encoding="utf-8") as f:
@@ -100,13 +99,10 @@ def main(cfg: DictConfig) -> None:
         for p, yt, pr, yp in zip(paths, y_true, y_prob, y_pred):
             writer.writerow({"path": p, "label": yt, "prob": pr, "pred": yp})
     
-    print(f"\n{'='*60}")
-    print(f"TEST RESULTS")
-    print(f"{'='*60}")
+    print(f"\nTEST RESULTS\n")
     print(f"Samples: {len(y_true)}")
     print(f"Accuracy: {accuracy:.4f}")
-    print(f"{'='*60}")
-    print(f"Predictions saved to: {preds_path}")
+    print(f"preds saved to: {preds_path}")
 
 
 if __name__ == "__main__":
