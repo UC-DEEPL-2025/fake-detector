@@ -38,8 +38,17 @@ this will:
 - print train/val loss, accuracy, and f1-score each epoch
 
 ### test the model
-testing functionality is currently integrated in the validation loop during training.
-standalone test script coming soon.
+```bash
+python stats.py
+```
+stats.py will:
+- Load the saved model (best_vit_deepfake_model.pth)
+- Evaluate it on the validation dataset
+
+Generate:
+- evaluation_report.txt
+
+No training occurs in this script — only inference + statistics.
 
 ## dataset format
 
@@ -118,7 +127,6 @@ fake-detector/
 
 todo:
 - migrate to config-driven architecture with hydra
-- separate train/test scripts
 - add configs/ directory for yaml configurations
 - proper metrics tracking and logging
 - support for additional models: ResNet, EfficientNet
